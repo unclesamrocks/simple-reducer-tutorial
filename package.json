@@ -1,0 +1,16 @@
+{
+	"name": "simple-reducer-implementation",
+	"version": "1.0.0",
+	"description": "",
+	"main": "test.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"start": "(start tsc -w & cd ./dist && nodemon ./app.js) || (start tsc -w & cd ./dist & nodemon ./app.js)"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"dependencies": {
+		"@types/node": "^13.1.0"
+	}
+}
