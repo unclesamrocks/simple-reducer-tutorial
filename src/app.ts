@@ -1,14 +1,18 @@
 import { todo } from './test.json'
 
-import { createStore, Reducer, Action } from './reducer'
+import { createStore, Reducer, Action, State } from './reducer'
 
 console.log('[Starting...]')
 /*==============================================
                 actions
 ===============================================*/
-type ActionTypes = 'ADD' | 'REMOVE' | 'UPDATE'
+enum ActionTypes {
+	'ADD' = 'ADD',
+	'REMOVE' = 'REMOVE',
+	'UPDATE' = 'UPDATE'
+}
 
-type Todo = { id: string; title: string; price: number }
+type Todo = { id: number; title: string; price: number }
 
 type InitialState = {
 	todo: Todo[]
@@ -16,13 +20,13 @@ type InitialState = {
 /*==============================================
                 reducer
 ===============================================*/
-const reducer: Reducer<ActionTypes> = (state: InitialState, action: Action<ActionTypes>) => {
+const reducer: Reducer = (state: InitialState = { todo: todo }, action) => {
 	switch (action.type) {
-		case 'ADD':
+		case ActionTypes.ADD:
 			return { ...state, todo: state.todo.concat(action.todo) }
-		case 'REMOVE':
+		case ActionTypes.REMOVE:
 			return { ...state, todo: state.todo.filter(todo => todo.id !== action.id) }
-		case 'UPDATE':
+		case ActionTypes.UPDATE:
 			return {
 				...state,
 				todo: state.todo.map(todo => {
@@ -36,24 +40,32 @@ const reducer: Reducer<ActionTypes> = (state: InitialState, action: Action<Actio
 /*==============================================
                 init
 ===============================================*/
-const store = createStore<ActionTypes>({ todo: todo }, reducer)
+const store = createStore()
+store.addReducers({ todos: reducer })
 
+console.log('=================== { init } ===================')
 console.log(store.getState())
 store.subscribe((prev, next) => {
 	console.log('====================== =========== [ subscribe ] =========== ======================')
-	console.log('[prevState]', prev)
-	console.log('[nextState]', next)
+	console.log('[prevState]', prev.todos)
+	console.log('[nextState]', next.todos)
 })
-store.dispatch({ type: 'ADD', todo: { id: 6, title: 'New stuff', price: 550 } })
-store.dispatch({ type: 'ADD', todo: { id: 7, title: 'Another New stuff', price: 9000 } })
-store.dispatch({ type: 'REMOVE', id: 3 })
-// console.log('============ [ remove listener] ============')
-// unsubLink()
-store.dispatch({ type: 'REMOVE', id: 4 })
-store.dispatch({ type: 'UPDATE', todo: { id: 6, title: 'Edited stuff here', price: 880 } })
-// console.log(store.getState())
+store.dispatch({ type: ActionTypes.ADD, todo: { id: 6, title: 'New stuff', price: 550 } })
+store.dispatch({ type: ActionTypes.ADD, todo: { id: 7, title: 'Another New stuff', price: 9000 } })
+store.dispatch({ type: ActionTypes.REMOVE, id: 3 })
+store.dispatch({ type: ActionTypes.REMOVE, id: 4 })
+store.dispatch({ type: ActionTypes.UPDATE, todo: { id: 6, title: 'Edited stuff here', price: 880 } })
 
-const anotherStore = createStore({ todo: [{ id: 555, title: 'diff', price: 999 }] }, reducer)
-anotherStore.dispatch({ type: 'ADD', todo: { id: 655, title: 'diff', price: 999 } })
-anotherStore.dispatch({ type: 'UPDATE', todo: { id: 555, price: 789 } })
-console.log(anotherStore.getState())
+/*==============================================
+				second init
+===============================================*/
+const newReducer: Reducer = (state: State = { stuff: ['asdsad'] }, action: Action) => {
+	if (action.type === 'add') return { ...state, stuff: state.stuff.concat(action.item) }
+	return state
+}
+store.addReducers({ stuff: newReducer })
+store.subscribe((prev, next) => {
+	console.log(prev.stuff || null, next.stuff)
+})
+store.dispatch({ type: 'add', item: 'new item' })
+store.dispatch({ type: 'add', item: 'another stuff' })

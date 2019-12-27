@@ -1,43 +1,65 @@
+import { each as _each, isEmpty } from 'lodash'
+
 /*==============================================
                 types
 ===============================================*/
-export type Action<T> = { type: T; [payload: string]: any }
+export type Action = { type: string; [payload: string]: any }
 
-export type State = any
+export type State = { [k: string]: any }
 
-export type Subscriber = (prevState: State, currentState: State) => void
+type Subscriber = (prevState: State, currentState: State) => void
 
-export type Reducer<T> = (state: State, action: Action<T>) => State
+export type Reducer = (state: State, action: Action) => State
+
+type Reducers = { [k: string]: Reducer }
 
 /*==============================================
                 store
 ===============================================*/
-export const createStore = <T>(state: State, reducer: Reducer<T>) => {
+export const createStore = () => {
+	// current reducer sert
+	let currentReducerSet = {}
 	// set state
-	let currentState = state
+	let currentState: State = {}
 	// set reducer
-	let currentReducer = reducer
+	let currentReducer: Reducer = (state, action) => state
 	// set subscriptions
 	let subscribers: Subscriber[] = []
 	// dispatch
-	const dispatch = (action: Action<T>) => {
+	const dispatch = (action: Action) => {
 		const prevState = currentState
 		currentState = currentReducer({ ...currentState }, action)
 		subscribers.forEach(subscriber => subscriber(prevState, currentState))
 	}
-	// get state
-	const getState = () => currentState
-	// subscrribe
+	// add reducers
+	const addReducers = (reducers: Reducers) => {
+		currentReducerSet = { ...currentReducerSet, ...reducers }
+		currentReducer = (state, action) => {
+			const r: any = {}
+			_each(currentReducerSet, (reducer: Reducer, key) => {
+				r[key] = reducer(state[key], action)
+			})
+			return r
+		}
+		// update initial state of currentState
+		currentState = currentReducer({ ...currentState }, { type: 'init' })
+	}
+	// get state (shallow copy)
+	const getState = () => ({ ...currentState })
+	// subscribe
 	const subscribe = (subscriber: Subscriber) => {
 		subscribers.push(subscriber)
-		return () => {
-			subscribers = subscribers.filter(sub => sub !== subscriber)
-		}
+	}
+	// unsubscribe
+	const unsubscribe = (subscriber: Subscriber) => {
+		subscribers = subscribers.filter(sub => sub !== subscriber)
 	}
 	// return
 	return {
+		addReducers: addReducers,
 		dispatch: dispatch,
 		getState: getState,
-		subscribe: subscribe
+		subscribe: subscribe,
+		unsubscribe: unsubscribe
 	}
 }
