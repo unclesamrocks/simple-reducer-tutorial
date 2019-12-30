@@ -5,14 +5,19 @@
 	"main": "test.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"start": "(start tsc -w & cd ./dist && nodemon ./app.js) || (start tsc -w & cd ./dist & nodemon ./app.js)"
+		"start": "(start tsc -w & cd ./dist && nodemon ./app.js) || (start tsc -w & cd ./dist & nodemon ./app.js)",
+		"dev": "npx babel --watch dist --out-dir . --presets react-app/prd "
 	},
 	"keywords": [],
 	"author": "",
 	"license": "ISC",
 	"dependencies": {
 		"@types/lodash": "^4.14.149",
-		"@types/node": "^13.1.0"
+		"@types/node": "^13.1.0",
+		"babel-cli": "^6.26.0",
+		"babel-preset-react-app": "^3.1.2",
+		"react": "^16.12.0",
+		"react-dom": "^16.12.0"
 	},
 	"devDependencies": {
 		"lodash": "^4.17.15"

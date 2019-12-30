@@ -1,11 +1,10 @@
-import { each as _each, isEmpty } from 'lodash'
-
+import { each as _each } from 'lodash'
 /*==============================================
                 types
 ===============================================*/
-export type Action = { type: string; [payload: string]: any }
+type Action = { type: string; [payload: string]: any }
 
-export type State = { [k: string]: any }
+type State = { [k: string]: any }
 
 type Subscriber = (prevState: State, currentState: State) => void
 
@@ -13,10 +12,18 @@ export type Reducer = (state: State, action: Action) => State
 
 type Reducers = { [k: string]: Reducer }
 
+interface Store {
+	addReducers: (reducers: Reducers) => void
+	dispatch: (a: Action) => void
+	getState: () => State
+	subscribe: (subscriber: Subscriber) => void
+	unsubscribe: (subscriber: Subscriber) => void
+}
+
 /*==============================================
                 store
 ===============================================*/
-export const createStore = () => {
+const createStore = (): Store => {
 	// current reducer sert
 	let currentReducerSet = {}
 	// set state
@@ -56,10 +63,22 @@ export const createStore = () => {
 	}
 	// return
 	return {
-		addReducers: addReducers,
-		dispatch: dispatch,
-		getState: getState,
-		subscribe: subscribe,
-		unsubscribe: unsubscribe
+		addReducers,
+		dispatch,
+		getState,
+		subscribe,
+		unsubscribe
 	}
 }
+
+/*==============================================
+				instance
+===============================================*/
+let globalStore: Store | undefined
+
+const getInstance = () => {
+	if (!globalStore) globalStore = createStore()
+	return globalStore
+}
+// exports
+export default getInstance()
